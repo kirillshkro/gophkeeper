@@ -2,7 +2,7 @@
 
 ## 1. Общие положения
 
-- Инструменты: `go test -v -race -cover`, `go.uber.org/mock`, GORM Gen (gorm.io/gen), SQLite in-memory (для интеграционных тестов адаптера).
+- Инструменты: `go test -v -race -cover`, `go.uber.org/mock`, GORM Gen (gorm.io/gen), PostgreSQL (для интеграционных тестов адаптера в Docker образе).
 - Пакет нужен и серверу (персистентность), и клиенту (локальное хранилище).
 - Имена: `TestStorage_<Адаптер>_<Сценарий>`, `TestStorage_Factory_...`, `TestStorage_CanStore_...`.
 - Ключевые ошибки: `ErrNotFound`, `ErrConflict`, `ErrStorageFull`, `ErrCorruptData`.
