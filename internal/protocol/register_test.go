@@ -17,8 +17,10 @@ import (
 //	4. any invalid field format is rejected;
 //	5. a nil or zero request is rejected.
 //
-// Every error assertion goes through errors.Is, so the suite also verifies
-// that all validation errors wrap ErrInvalidPayload.
+// Every error is checked two ways: errors.Is against ErrInvalidPayload
+// (the detectable base) and errors.As against FieldError (the context), so
+// the suite verifies that the offending field is a first-class value, not a
+// string fragment.
 func TestProtocol_ValidateRegister(t *testing.T) {
 	t.Helper()
 
@@ -26,7 +28,7 @@ func TestProtocol_ValidateRegister(t *testing.T) {
 		name      string
 		request   *RegisterRequest
 		wantErr   error
-		wantField string // non-empty when the error message must name this field
+		wantField string // the exact fe.Field expected when an error is returned
 	}{
 		// 1. valid request.
 		{
@@ -146,13 +148,23 @@ func TestProtocol_ValidateRegister(t *testing.T) {
 			if (err == nil) != (tt.wantErr == nil) {
 				t.Fatalf("err=%v, want err=%v", err, tt.wantErr)
 			}
-			if err != nil && !errors.Is(err, tt.wantErr) {
+			if err == nil {
+				return
+			}
+			// (a) the detectable base.
+			if !errors.Is(err, tt.wantErr) {
 				t.Fatalf("got %q, want %v", err, tt.wantErr)
 			}
-			if tt.wantField != "" {
-				if !strings.Contains(err.Error(), tt.wantField) {
-					t.Fatalf("message %q does not name field %q", err, tt.wantField)
-				}
+			// (b) the context: extract the offending field as a typed value.
+			var fe *FieldError
+			if !errors.As(err, &fe) {
+				t.Fatalf("error %q does not expose the FieldError context", err)
+			}
+			if fe.Reason == "" {
+				t.Fatalf("FieldError has no reason (err: %q)", err)
+			}
+			if fe.Field != tt.wantField {
+				t.Fatalf("field=%q, want %q (err: %v)", fe.Field, tt.wantField, err)
 			}
 		})
 	}
