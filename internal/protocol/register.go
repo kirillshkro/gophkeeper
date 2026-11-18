@@ -3,7 +3,6 @@
 package protocol
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"unicode"
@@ -34,16 +33,16 @@ type Profile struct {
 // Validate reports whether the Profile is well-formed.
 //
 // A non-empty display name must not exceed maxDisplayNameLen runes and a
-// present e-mail must match emailRe. Each problem yields an error wrapping
-// ErrInvalidPayload and naming the offending field.
+// present e-mail must match emailRe. Each problem yields a FieldError
+// naming the offending field and wrapping ErrInvalidPayload.
 func (p Profile) Validate() error {
 	name := strings.TrimSpace(p.DisplayName)
 	if name != "" && len([]rune(name)) > maxDisplayNameLen {
-		return errField("display_name", "too long")
+		return fieldError("display_name", "too long")
 	}
 	email := strings.TrimSpace(p.Email)
 	if email != "" && !emailRe.MatchString(email) {
-		return errField("email", "must be a well-formed e-mail address")
+		return fieldError("email", "must be a well-formed e-mail address")
 	}
 	return nil
 }
@@ -55,14 +54,14 @@ func (p Profile) Validate() error {
 func validateLogin(login string) error {
 	login = strings.TrimSpace(login)
 	if login == "" {
-		return errField("login", "must not be empty")
+		return fieldError("login", "must not be empty")
 	}
 	if len(login) > maxLoginLen {
-		return errField("login", "too long")
+		return fieldError("login", "too long")
 	}
 	for _, r := range login {
 		if unicode.IsSpace(r) {
-			return errField("login", "must not contain whitespace")
+			return fieldError("login", "must not contain whitespace")
 		}
 	}
 	return nil
@@ -73,10 +72,10 @@ func validateLogin(login string) error {
 // After trimming it must be non-empty and must not exceed maxPasswordLen.
 func validatePassword(password string) error {
 	if strings.TrimSpace(password) == "" {
-		return errField("password", "must not be empty")
+		return fieldError("password", "must not be empty")
 	}
 	if len(password) > maxPasswordLen {
-		return errField("password", "too long")
+		return fieldError("password", "too long")
 	}
 	return nil
 }
@@ -100,11 +99,11 @@ type RegisterRequest struct {
 //
 // It returns nil when the login, the password and the profile are all valid.
 // A nil or zero request, an empty or malformed login, an empty or too long
-// password, or an invalid profile each yield an error wrapping
+// password, or an invalid profile each yield a FieldError wrapping
 // ErrInvalidPayload and naming the offending field.
 func ValidateRegister(req *RegisterRequest) error {
 	if req == nil {
-		return fmt.Errorf("%w: request must not be nil", ErrInvalidPayload)
+		return fieldError("request", "must not be nil")
 	}
 	if err := validateLogin(req.Login); err != nil {
 		return err
