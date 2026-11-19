@@ -105,6 +105,6 @@
 - [ ] покрытие ≥ 70%;
 - [ ] каждый payload + функция валидации покрыт;
 - [ ] JSON round-trip для всех payloads — 100%;
-- [ ] все ошибки (`ErrInvalidPayload`, `ErrUnsupportedVersion`, `ErrAuthRequired`) — через `errors.Is`;
+- [ ] все ошибки (`ErrInvalidPayload`, `ErrUnsupportedVersion`, `ErrAuthRequired`) — через `errors.Is` / `errors.As`;
 - [ ] пакет не зависит от реализации (`api`, `client`) — проверено по импортам;
 - [ ] godoc-документация у всех экспортированных элементов.
