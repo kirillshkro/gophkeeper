@@ -1,4 +1,4 @@
-module gophkeeper
+module github.com/kirillshkro/gophkeeper
 
 go 1.27.4
 
