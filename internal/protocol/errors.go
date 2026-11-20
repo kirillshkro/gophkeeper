@@ -14,6 +14,11 @@ import (
 // that names the offending field, so the message is actionable for a user.
 var ErrInvalidPayload = errors.New("invalid payload")
 
+// ErrAuthRequired is returned when the request does not carry a valid
+// "Authorization: Bearer <token>" header: the header is missing, the
+// scheme is not Bearer, or the token part is empty.
+var ErrAuthRequired = errors.New("authentication required")
+
 // FieldError is the *context* of an invalid-payload error.
 //
 // It is a typed error: it wraps ErrInvalidPayload (so errors.Is(err,
