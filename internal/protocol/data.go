@@ -3,6 +3,7 @@
 package protocol
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/kirillshkro/gophkeeper/internal/data"
@@ -149,5 +150,61 @@ func validateDataItem(item data.Item) error {
 	default:
 		return data.ErrUnknownType
 	}
+	return nil
+}
+
+// dataRequestJSON is the JSON wire form of DataRequest.
+type dataRequestJSON struct {
+	Item    *itemJSON `json:"item"`
+	Action  Action    `json:"action"`
+	ID      string    `json:"id"`
+	OwnerID string    `json:"owner_id"`
+	Version int       `json:"version"`
+}
+
+// MarshalJSON returns the JSON encoding of the data request.
+//
+// The request carries an item (a data.Item interface), which cannot be
+// serialized by the standard library — this method gives the payload a stable
+// wire form.
+func (r DataRequest) MarshalJSON() ([]byte, error) {
+	var item *itemJSON
+	if r.Item != nil {
+		ij, err := itemJSONOf(r.Item)
+		if err != nil {
+			return nil, fieldError("data.item", err.Error())
+		}
+		item = &ij
+	}
+	return json.Marshal(dataRequestJSON{
+		Item:    item,
+		Action:  r.Action,
+		ID:      r.ID,
+		OwnerID: r.OwnerID,
+		Version: r.Version,
+	})
+}
+
+// UnmarshalJSON decodes the data request from its JSON encoding.
+//
+// The method restores the concrete item type selected by the "type"
+// discriminator of the item wire form.
+func (r *DataRequest) UnmarshalJSON(b []byte) error {
+	var raw dataRequestJSON
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return fieldError("data", "cannot unmarshal JSON")
+	}
+	r.Item = nil
+	if raw.Item != nil {
+		item, err := itemFromJSON(*raw.Item)
+		if err != nil {
+			return fieldError("data.item", err.Error())
+		}
+		r.Item = item
+	}
+	r.Action = raw.Action
+	r.ID = raw.ID
+	r.OwnerID = raw.OwnerID
+	r.Version = raw.Version
 	return nil
 }

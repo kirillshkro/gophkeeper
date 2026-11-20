@@ -3,6 +3,7 @@
 package protocol
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -132,4 +133,50 @@ func validateChange(idx int, ownerID string, ch Change) error {
 // change index so that messages identify the offending element unambiguously.
 func changeField(field string, idx int) string {
 	return fmt.Sprintf("changes[%d].%s", idx, field)
+}
+
+// changeJSON is the JSON wire form of Change.
+type changeJSON struct {
+	Item      itemJSON  `json:"item"`
+	Action    Action    `json:"action"`
+	Version   int       `json:"version"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// MarshalJSON returns the JSON encoding of the change.
+//
+// The change carries an item (a data.Item interface), which cannot be
+// serialized by the standard library — this method gives the payload a stable
+// wire form.
+func (c Change) MarshalJSON() ([]byte, error) {
+	item, err := itemJSONOf(c.Item)
+	if err != nil {
+		return nil, fieldError("change.item", err.Error())
+	}
+	return json.Marshal(changeJSON{
+		Item:      item,
+		Action:    c.Action,
+		Version:   c.Version,
+		Timestamp: c.Timestamp,
+	})
+}
+
+// UnmarshalJSON decodes the change from its JSON encoding.
+//
+// The method restores the concrete item type selected by the "type"
+// discriminator of the item wire form.
+func (c *Change) UnmarshalJSON(b []byte) error {
+	var raw changeJSON
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return fieldError("change", "cannot unmarshal JSON")
+	}
+	item, err := itemFromJSON(raw.Item)
+	if err != nil {
+		return fieldError("change.item", err.Error())
+	}
+	c.Item = item
+	c.Action = raw.Action
+	c.Version = raw.Version
+	c.Timestamp = raw.Timestamp
+	return nil
 }
