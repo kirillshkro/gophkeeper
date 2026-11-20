@@ -101,6 +101,29 @@ func (c *ItemCore) SetVersion(version int) {
 	c.version = version
 }
 
+// SetID sets the unique identifier of the item.
+//
+// SetID is part of the reconstruction path: an item decoded from a
+// serialized form (see the protocol package) fills in the field that
+// Empty does not set.
+func (c *ItemCore) SetID(id string) {
+	c.id = id
+}
+
+// SetCreatedAt sets the creation time of the item.
+//
+// SetCreatedAt is part of the reconstruction path (see SetID).
+func (c *ItemCore) SetCreatedAt(t time.Time) {
+	c.createdAt = t
+}
+
+// SetUpdatedAt sets the last update time of the item.
+//
+// SetUpdatedAt is part of the reconstruction path (see SetID).
+func (c *ItemCore) SetUpdatedAt(t time.Time) {
+	c.updatedAt = t
+}
+
 // Bump increments the data version and refreshes the UpdatedAt time.
 func (c *ItemCore) Bump() {
 	c.version++
