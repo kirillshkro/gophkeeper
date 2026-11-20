@@ -11,11 +11,11 @@ import (
 // TestProtocol_ValidateRegister covers every scenario from tests-specs 3.2
 // for ValidateRegister:
 //
-//	1. a valid request (login, password and profile) is accepted;
-//	2. a missing login is rejected with the field named;
-//	3. a missing password is rejected;
-//	4. any invalid field format is rejected;
-//	5. a nil or zero request is rejected.
+//  1. a valid request (login, password and profile) is accepted;
+//  2. a missing login is rejected with the field named;
+//  3. a missing password is rejected;
+//  4. any invalid field format is rejected;
+//  5. a nil or zero request is rejected.
 //
 // Every error is checked two ways: errors.Is against ErrInvalidPayload
 // (the detectable base) and errors.As against FieldError (the context), so
@@ -49,95 +49,95 @@ func TestProtocol_ValidateRegister(t *testing.T) {
 
 		// 5. nil / zero request.
 		{
-			name:    "nil request",
-			request: nil,
-			wantErr: ErrInvalidPayload,
+			name:      "nil request",
+			request:   nil,
+			wantErr:   ErrInvalidPayload,
 			wantField: "request",
 		},
 		{
-			name:    "zero request",
-			request: &RegisterRequest{},
-			wantErr: ErrInvalidPayload,
+			name:      "zero request",
+			request:   &RegisterRequest{},
+			wantErr:   ErrInvalidPayload,
 			wantField: "login",
 		},
 
 		// 2. missing login.
 		{
-			name:    "empty login",
-			request: &RegisterRequest{Password: "s3cret"},
-			wantErr: ErrInvalidPayload,
+			name:      "empty login",
+			request:   &RegisterRequest{Password: "s3cret"},
+			wantErr:   ErrInvalidPayload,
 			wantField: "login",
 		},
 		{
-			name:    "whitespace-only login",
-			request: &RegisterRequest{Login: " \t ", Password: "s3cret"},
-			wantErr: ErrInvalidPayload,
+			name:      "whitespace-only login",
+			request:   &RegisterRequest{Login: " \t ", Password: "s3cret"},
+			wantErr:   ErrInvalidPayload,
 			wantField: "login",
 		},
 
 		// 4. invalid login formats.
 		{
-			name:    "login with internal whitespace",
-			request: &RegisterRequest{Login: "j ohn", Password: "s3cret"},
-			wantErr: ErrInvalidPayload,
+			name:      "login with internal whitespace",
+			request:   &RegisterRequest{Login: "j ohn", Password: "s3cret"},
+			wantErr:   ErrInvalidPayload,
 			wantField: "login",
 		},
 		{
-			name:    "login too long",
-			request: &RegisterRequest{Login: strings.Repeat("a", 129), Password: "s3cret"},
-			wantErr: ErrInvalidPayload,
+			name:      "login too long",
+			request:   &RegisterRequest{Login: strings.Repeat("a", 129), Password: "s3cret"},
+			wantErr:   ErrInvalidPayload,
 			wantField: "login",
 		},
 
 		// 3. missing password.
 		{
-			name:    "empty password",
-			request: &RegisterRequest{Login: "user@example.com"},
-			wantErr: ErrInvalidPayload,
+			name:      "empty password",
+			request:   &RegisterRequest{Login: "user@example.com"},
+			wantErr:   ErrInvalidPayload,
 			wantField: "password",
 		},
 		{
-			name:    "whitespace-only password",
-			request: &RegisterRequest{Login: "user@example.com", Password: "  "},
-			wantErr: ErrInvalidPayload,
+			name:      "whitespace-only password",
+			request:   &RegisterRequest{Login: "user@example.com", Password: "  "},
+			wantErr:   ErrInvalidPayload,
 			wantField: "password",
 		},
 		{
-			name:    "password too long",
-			request: &RegisterRequest{Login: "user@example.com", Password: strings.Repeat("p", 2049)},
-			wantErr: ErrInvalidPayload,
+			name:      "password too long",
+			request:   &RegisterRequest{Login: "user@example.com", Password: strings.Repeat("p", 2049)},
+			wantErr:   ErrInvalidPayload,
 			wantField: "password",
 		},
 
 		// 4. invalid profile fields.
 		{
-			name:    "invalid e-mail format",
+			name: "invalid e-mail format",
 			request: &RegisterRequest{
 				Login:    "user@example.com",
 				Password: "s3cret",
 				Profile:  Profile{Email: "not-an-email"},
 			},
-			wantErr: ErrInvalidPayload,
+			wantErr:   ErrInvalidPayload,
 			wantField: "email",
 		},
 		{
-			name:    "e-mail missing tld",
+			name: "e-mail missing tld",
 			request: &RegisterRequest{
 				Login:    "user@example.com",
 				Password: "s3cret",
 				Profile:  Profile{Email: "user@example"},
 			},
-			wantErr: ErrInvalidPayload,
+			wantErr:   ErrInvalidPayload,
 			wantField: "email",
 		},
 		{
-			name:    "display name too long",
+			name: "display name too long",
 			request: &RegisterRequest{
 				Login:    "user@example.com",
 				Password: "s3cret",
 				Profile:  Profile{DisplayName: strings.Repeat("D", 129)},
 			},
-			wantErr: ErrInvalidPayload,
+			wantErr:   ErrInvalidPayload,
 			wantField: "display_name",
 		},
 	}

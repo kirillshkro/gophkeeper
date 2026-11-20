@@ -4,10 +4,10 @@ import "strings"
 
 // Metadata stores arbitrary textual metadata for an item:
 //
-// - Website, Person and Bank describe the affiliation of the item (a web
-//   site, a person or a bank);
-// - OTPs is the list of one-time activation codes;
-// - Extra is a map of arbitrary key/value pairs.
+//   - Website, Person and Bank describe the affiliation of the item (a web
+//     site, a person or a bank);
+//   - OTPs is the list of one-time activation codes;
+//   - Extra is a map of arbitrary key/value pairs.
 type Metadata struct {
 	// Website is the web site the item belongs to.
 	Website string
