@@ -8,11 +8,11 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-// registerAlice registers a fresh user and returns it; the suites' SetupTest
-// methods use it to seed a known user before every test.
-func registerAlice(s *service) User {
-	u, _ := s.Register(RegisterRequest{Login: "alice", Password: "hunter2"})
-	return u
+// registerAlice registers the test user "alice" and returns it with any
+// error from registration. The suites' SetupTest methods use it to seed a
+// known user before every test and assert that registration never fails.
+func registerAlice(s *service) (User, error) {
+	return s.Register(RegisterRequest{Login: "alice", Password: "hunter2"})
 }
 
 // UpdateSuite is a testify suite for the UserService.Update flow.
@@ -32,7 +32,9 @@ type UpdateSuite struct {
 // test method, guaranteeing full isolation between tests.
 func (s *UpdateSuite) SetupTest() {
 	s.service, _ = newFakeService()
-	s.user = registerAlice(s.service)
+	var err error
+	s.user, err = registerAlice(s.service)
+	s.Require().NoError(err)
 }
 
 // TestUser_Update runs the suite via the standard go test entry point.
@@ -179,7 +181,9 @@ type DeleteSuite struct {
 // SetupTest provisions a fresh service and a registered user before each test.
 func (s *DeleteSuite) SetupTest() {
 	s.service, _ = newFakeService()
-	s.user = registerAlice(s.service)
+	var err error
+	s.user, err = registerAlice(s.service)
+	s.Require().NoError(err)
 }
 
 // TestUser_Delete runs the suite via the standard go test entry point.
@@ -245,12 +249,14 @@ type StatusSuite struct {
 // SetupTest provisions a fresh service and a registered user before each test.
 func (s *StatusSuite) SetupTest() {
 	s.service, _ = newFakeService()
-	s.user = registerAlice(s.service)
+	var err error
+	s.user, err = registerAlice(s.service)
+	s.Require().NoError(err)
 }
 
 // TestUser_Status runs the suite via the standard go test entry point.
 func TestUser_Status(t *testing.T) {
-	suite.Run(t, &StatusSuite{})
+	suite.Run(t, new(StatusSuite))
 }
 
 // TestBlockMakesTheUserInactive checks that blocking a user makes GetByLogin
